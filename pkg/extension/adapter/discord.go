@@ -3,10 +3,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/hegemone/kore/pkg/msg"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 type adapter struct {

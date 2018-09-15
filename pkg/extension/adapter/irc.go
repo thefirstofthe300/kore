@@ -2,22 +2,49 @@
 package main
 
 import (
+	"strings"
+
 	irc "github.com/fluffle/goirc/client"
 	"github.com/hegemone/kore/pkg/msg"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 type adapter struct {
 	client      *irc.Conn
-	ingressChan chan<- msg.RawIngress
+	ingressChan chan<- msg.IngressInterface
 }
 
-func (a *adapter) Name() string {
+type IngressMessage struct {
+	RawContent string
+	Identity   string
+	ChannelID  string
+}
+
+func (im IngressMessage) GetAdapterName() string {
+	return Adapter.Name()
+}
+
+func (im IngressMessage) GetChannelID() string {
+	return "#jbot-test"
+}
+
+func (im IngressMessage) GetIdentity() string {
+	return im.Identity
+}
+
+func (im IngressMessage) GetRawMessage() string {
+	return im.RawContent
+}
+
+func (im IngressMessage) GetParsedMessage() string {
+	return im.RawContent[0:len(im.RawContent)]
+}
+
+func (a adapter) Name() string {
 	return "ex-irc.adapters.kore.nsk.io"
 }
 
-func (a *adapter) Listen(ingressCh chan<- msg.RawIngress) {
+func (a *adapter) Listen(ingressCh chan<- msg.IngressInterface) {
 	log.Debug("ex-irc.adapters::Listen")
 	a.ingressChan = ingressCh
 
@@ -31,7 +58,7 @@ func (a *adapter) Listen(ingressCh chan<- msg.RawIngress) {
 	})
 
 	a.client.HandleFunc(irc.PRIVMSG, func(conn *irc.Conn, line *irc.Line) {
-		a.ingressChan <- msg.RawIngress{
+		a.ingressChan <- IngressMessage{
 			Identity:   line.Nick,
 			RawContent: line.Text(),
 			ChannelID:  "#jbot-test",

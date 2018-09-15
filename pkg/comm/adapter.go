@@ -2,9 +2,10 @@ package comm
 
 import (
 	"fmt"
-	"github.com/hegemone/kore/pkg/msg"
 	goplugin "plugin"
 	"regexp"
+
+	"github.com/hegemone/kore/pkg/msg"
 )
 
 // The prefix trigger used to denote a cmd.
@@ -30,7 +31,7 @@ type Adapter interface {
 	// to external platform events. It should be implemented as non-blocking and
 	// push `RawIngressMessage`s to the inChan on the receipt of raw messages
 	// from the external platform.
-	Listen(chan<- msg.RawIngress)
+	Listen(chan<- msg.IngressInterface)
 }
 
 // LoadAdapter loads adapter behavior from a given .so adapter file

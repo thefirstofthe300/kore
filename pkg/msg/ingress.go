@@ -1,5 +1,13 @@
 package msg
 
+type IngressInterface interface {
+	GetAdapterName() string
+	GetChannelID() string
+	GetIdentity() string
+	GetParsedMessage() string
+	GetRawMessage() string
+}
+
 // Originator contains originating information for an `IngressMessage`. It
 // contains the "identity" of the person/system that triggered the incoming
 // message, in addition to the adapter name that procuded the event.
