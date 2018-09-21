@@ -124,7 +124,7 @@ func (e *Engine) handleIngress(message msg.MessageInterface) {
 			// an `EgressMessage` and push that onto the outgoing buffer for dispatch
 			if delegate.response != "" {
 				log.Debugf("Engine::handleIngress: plugin response is %+v", delegate.response)
-				message.SetPluginResponse(&delegate.response)
+				message.SetPluginResponse(delegate.response)
 				log.Debugf("Engine::handleIngress: sending message %+v to egressBuffer", message)
 				e.egressBuffer <- message
 			}
@@ -243,5 +243,6 @@ func (e *Engine) loadAdapters() error {
 	for adapterName := range e.adapters {
 		log.Infof("-> %s", adapterName)
 	}
+
 	return nil
 }

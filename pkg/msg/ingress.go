@@ -6,6 +6,6 @@ type MessageInterface interface {
 	GetAdapterName() string
 	GetParsedMessage() string
 	GetRawMessage() string
-	GetPluginResponse() *string
-	SetPluginResponse(*string)
+	GetPluginResponse() string
+	SetPluginResponse(string)
 }

@@ -46,11 +46,12 @@ func LoadAdapter(adapterFile string) (Adapter, error) {
 	}
 
 	aSym, err := rawGoPlugin.Lookup("Adapter")
+
 	if err != nil {
 		return nil, err
 	}
-	a := aSym.(Adapter)
 
+	a := aSym.(Adapter)
 	return a, nil
 }
 
