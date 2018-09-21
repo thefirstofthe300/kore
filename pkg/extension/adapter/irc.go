@@ -2,8 +2,6 @@
 package main
 
 import (
-	"strings"
-
 	irc "github.com/fluffle/goirc/client"
 	"github.com/hegemone/kore/pkg/msg"
 	log "github.com/sirupsen/logrus"
@@ -11,40 +9,54 @@ import (
 
 type adapter struct {
 	client      *irc.Conn
-	ingressChan chan<- msg.IngressInterface
+	ingressChan chan<- msg.MessageInterface
 }
 
-type IngressMessage struct {
+type Message struct {
 	RawContent string
 	Identity   string
 	ChannelID  string
+	Response   *string
 }
 
-func (im IngressMessage) GetAdapterName() string {
+func (im Message) GetAdapterName() string {
 	return Adapter.Name()
 }
 
-func (im IngressMessage) GetChannelID() string {
-	return "#jbot-test"
+func (im Message) GetMetadata() interface{} {
+	return Message{
+		im.RawContent,
+		im.Identity,
+		im.ChannelID,
+		im.Response,
+	}
 }
 
-func (im IngressMessage) GetIdentity() string {
+func (im Message) GetIdentity() string {
 	return im.Identity
 }
 
-func (im IngressMessage) GetRawMessage() string {
+func (im Message) GetRawMessage() string {
 	return im.RawContent
 }
 
-func (im IngressMessage) GetParsedMessage() string {
+func (im Message) GetParsedMessage() string {
 	return im.RawContent[0:len(im.RawContent)]
+}
+
+func (im Message) SetPluginResponse(response *string) {
+	im.Response = response
+}
+
+func (im Message) GetPluginResponse() *string {
+	return im.Response
 }
 
 func (a adapter) Name() string {
 	return "ex-irc.adapters.kore.nsk.io"
 }
 
-func (a *adapter) Listen(ingressCh chan<- msg.IngressInterface) {
+func (a *adapter) Listen(ingressCh chan<- msg.MessageInterface) {
 	log.Debug("ex-irc.adapters::Listen")
 	a.ingressChan = ingressCh
 
@@ -58,7 +70,7 @@ func (a *adapter) Listen(ingressCh chan<- msg.IngressInterface) {
 	})
 
 	a.client.HandleFunc(irc.PRIVMSG, func(conn *irc.Conn, line *irc.Line) {
-		a.ingressChan <- IngressMessage{
+		a.ingressChan <- Message{
 			Identity:   line.Nick,
 			RawContent: line.Text(),
 			ChannelID:  "#jbot-test",
@@ -70,13 +82,19 @@ func (a *adapter) Listen(ingressCh chan<- msg.IngressInterface) {
 	}
 }
 
-func (a *adapter) SendMessage(m msg.Egress) {
+func (a *adapter) SendMessage(m msg.MessageInterface) {
 	// The irc library we are using truncates messages with \n characters to
 	// the first line. As a workaround, split the message on the newline and
 	// send each line individually.
-	for _, i := range strings.Split(m.Serialize(), "\n") {
-		a.client.Privmsg(m.ChannelID, i)
-	}
+	message := m.GetMetadata()
+	aMessage := message.(Message)
+	log.Debugf("ex-irc.adapters::SendMessage: message is %+v", aMessage)
+	// msgMetadata := aMessage.GetMetadata()
+	// log.Debugf("ex-irc.adapters::GetMetadata: sending message %+v to channel %+v", aMessage.GetPluginResponse(), msgMetadata.ChannelID)
+
+	// for _, i := range strings.Split(m.GetPluginResponse(), "\n") {
+	// 	a.client.Privmsg(msgMetadata.GetMetadata().ChannelID, i)
+	// }
 }
 
 // Adapter is the exported plugin symbol picked up by engine

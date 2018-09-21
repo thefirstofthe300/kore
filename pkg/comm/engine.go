@@ -13,8 +13,8 @@ import (
 // buffers in a concurrent way, as well as the loading and execution of extensions.
 type Engine struct {
 	// Messaging buffers
-	ingressBuffer chan msg.IngressInterface
-	egressBuffer  chan msg.EgressBuffer
+	ingressBuffer chan msg.MessageInterface
+	egressBuffer  chan msg.MessageInterface
 
 	// Extensions
 	plugins  map[string]Plugin
@@ -27,8 +27,8 @@ func NewEngine(c *config.Config) *Engine {
 	bufferSize := c.GetEngine().BufferSize
 
 	return &Engine{
-		ingressBuffer: make(chan msg.IngressInterface, bufferSize),
-		egressBuffer:  make(chan msg.EgressBuffer, bufferSize),
+		ingressBuffer: make(chan msg.MessageInterface, bufferSize),
+		egressBuffer:  make(chan msg.MessageInterface, bufferSize),
 		plugins:       make(map[string]Plugin),
 		adapters:      make(map[string]Adapter),
 	}
@@ -65,21 +65,21 @@ func (e *Engine) Start() {
 
 	// Spawn listening routines for each adapter
 	for _, adapter := range e.adapters {
-		adapterCh := make(chan msg.IngressInterface, 2)
+		adapterIngressChannel := make(chan msg.MessageInterface, 2)
 
-		go func(adapter Adapter, adapterCh chan msg.IngressInterface) {
+		go func(adapter Adapter, adapterIngressChannel chan msg.MessageInterface) {
 			// Tell the adapter to start listening and sending messages back via
 			// their own ingress channel. Listen should be non-blocking!
-			adapter.Listen(adapterCh)
+			adapter.Listen(adapterIngressChannel)
 
 			// Engine listens to the N channels the adapters are transmitting on
 			// for RawIngressMessages. Adapter channels are fanned-in to the
 			// rawIngressBuffer for parsing.
-			for rim := range adapterCh {
-				e.ingressBuffer <- rim
+			for message := range adapterIngressChannel {
+				e.ingressBuffer <- message
 				funcDone()
 			}
-		}(adapter, adapterCh)
+		}(adapter, adapterIngressChannel)
 	}
 
 	// Wire up messaging events to their handlers
@@ -98,24 +98,24 @@ func (e *Engine) Start() {
 // handleRawIngress main function is to filter commands from raw messages.
 // If a message is determined to be a command, it is parsed and structured as
 // an `IngressMessage`, then passed to the ingressBuffer for further handling.
-func (e *Engine) handleIngress(m msg.IngressInterface) {
+func (e *Engine) handleIngress(message msg.MessageInterface) {
 	go func() {
-		if !isCmd(m.GetRawMessage()) {
+		if !isCmd(message.GetRawMessage()) {
 			return
 		}
 
-		if string(m.GetRawMessage()[0]) != adapterCmdTriggerPrefix {
+		if string(message.GetRawMessage()[0]) != adapterCmdTriggerPrefix {
 			log.Warningf(
 				"raw content was flagged as a command, but does not contain trigger prefix, skipping...",
 			)
-			log.Warning(m.GetRawMessage)
+			log.Warning(message.GetRawMessage)
 			return
 		}
 
-		cmdMatches := e.applyCmdManifests(m.GetParsedMessage())
+		cmdMatches := e.applyCmdManifests(message.GetParsedMessage())
 
 		for _, cmdMatch := range cmdMatches {
-			delegate := NewCmdDelegate(m, cmdMatch.Submatches)
+			delegate := NewCmdDelegate(message, cmdMatch.Submatches)
 
 			// Execute plugin command and pass delegate as an intermediary
 			cmdMatch.CmdFn(&delegate)
@@ -123,10 +123,10 @@ func (e *Engine) handleIngress(m msg.IngressInterface) {
 			// If the plugin has sent a response to the delegate, let's build
 			// an `EgressMessage` and push that onto the outgoing buffer for dispatch
 			if delegate.response != "" {
-				e.egressBuffer <- msg.EgressBuffer{
-					Originator:    msg.Originator{Identity: m.GetIdentity(), AdapterName: m.GetAdapterName(), ChannelID: m.GetChannelID()},
-					EgressMessage: msg.Egress{ChannelID: m.GetChannelID(), Content: delegate.response},
-				}
+				log.Debugf("Engine::handleIngress: plugin response is %+v", delegate.response)
+				message.SetPluginResponse(&delegate.response)
+				log.Debugf("Engine::handleIngress: sending message %+v to egressBuffer", message)
+				e.egressBuffer <- message
 			}
 		}
 	}()
@@ -168,10 +168,11 @@ func (e *Engine) applyCmdManifests(content string) []cmdMatch {
 
 // handleEgress simply routes an `EgressMessage` off the egressBuffer to an
 // adapter for transmission.
-func (e *Engine) handleEgress(ebm msg.EgressBuffer) {
+func (e *Engine) handleEgress(ebm msg.MessageInterface) {
 	log.Debugf("Engine::handleEgress: %+v", ebm)
 	go func() {
-		e.adapters[ebm.Originator.AdapterName].SendMessage(ebm.EgressMessage)
+		log.Debugf("Engine::handleEgress: sending message to adapter %+v", ebm.GetAdapterName())
+		e.adapters[ebm.GetAdapterName()].SendMessage(ebm)
 	}()
 }
 
