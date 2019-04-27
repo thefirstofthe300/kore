@@ -1,3 +1,4 @@
+buildPack: none
 agent:
   label: jenkins-go
   container: go
@@ -9,8 +10,10 @@ pipelines:
       - groovy: checkout scm
     build:
       steps:
-      - sh: make linux
+      - sh: make build
         name: make-linux
+      - sh: make test
+        name: make-test
   release:
     setup:
       steps:
