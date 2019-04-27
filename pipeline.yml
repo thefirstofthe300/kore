@@ -1,0 +1,18 @@
+agent:
+  label: jenkins-go
+  container: go
+  dir: /home/jenkins/go/src/github.com/thefirstofthe300/kore
+pipelines:
+  release:
+    setup:
+      steps:
+      - groovy: git clone 'https://github.com/thefirstofthe300/kore.git'
+        name: checkout-scm
+      - sh: go get github.com/golang/dep
+        name: go-get-dep
+      - sh: make build
+        image: library/golang:latest
+        name: make-linux
+      - sh: make test
+        image: library/golang:latest
+        name: make-test
