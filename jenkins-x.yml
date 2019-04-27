@@ -10,8 +10,11 @@ pipelineConfig:
       build:
         steps:
         - sh: /usr/local/go/bin/go get github.com/golang/dep
+          image: library/golang:latest
           name: go-get-dep
         - sh: make build
+          image: library/golang:latest
           name: make-linux
         - sh: make test
+          image: library/golang:latest
           name: make-test
