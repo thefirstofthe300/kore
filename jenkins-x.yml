@@ -8,12 +8,11 @@ pipelineConfig:
         agent:
           image: library/golang:latest
         stages:
+        - name: ci
           steps:
           - groovy: checkout scm
-        build:
-          steps:
+            name: checkout-scm
           - sh: go get github.com/golang/dep
-            image: library/golang:latest
             name: go-get-dep
           - sh: make build
             image: library/golang:latest
