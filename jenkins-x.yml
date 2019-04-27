@@ -1,17 +1,15 @@
 buildPack: none
-agent:
-  label: jenkins-go
-  container: go
-  dir: /home/jenkins/go/src/github.com/thefirstofthe300/kore
-PipelineConfig:
+pipelineConfig:
   pipelines:
     pullRequest:
+      agent:
+        image: golang
       setup:
         steps:
         - groovy: checkout scm
       build:
         steps:
-        - sh: ${GOPATH}/bin//go get github.com/golang/dep
+        - sh: go get github.com/golang/dep
           name: go-get-dep
         - sh: make build
           name: make-linux
