@@ -1,1 +1,14 @@
-buildPack: none
+buildPack: go
+pipelineConfig:
+  agent: {}
+  pipelines:
+    pullRequest:
+      build:
+        replace: true
+        steps:
+        - sh: go get github.com/golang/dep
+          name: go-get-dep
+        - sh: make build
+          name: make-build
+        - sh: make test
+          name: make-test
