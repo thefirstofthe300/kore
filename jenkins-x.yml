@@ -10,7 +10,7 @@ pipelineConfig:
         stages:
         - name: ci
           steps:
-          - groovy: checkout scm
+          - command: git 'https://github.com/thefirstofthe300/kore.git'
             name: checkout-scm
           - sh: go get github.com/golang/dep
             name: go-get-dep
