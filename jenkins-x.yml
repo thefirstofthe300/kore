@@ -6,7 +6,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          container: library/golang:latest
+          image: library/golang:latest
         stages:
           steps:
           - groovy: checkout scm
