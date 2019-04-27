@@ -4,17 +4,20 @@ agent:
 pipelineConfig:
   pipelines:
     pullRequest:
-      setup:
-        steps:
-        - groovy: checkout scm
-      build:
-        steps:
-        - sh: go get github.com/golang/dep
-          image: library/golang:latest
-          name: go-get-dep
-        - sh: make build
-          image: library/golang:latest
-          name: make-linux
-        - sh: make test
-          image: library/golang:latest
-          name: make-test
+      pipeline:
+        agent:
+          container: library/golang:latest
+        stages:
+          steps:
+          - groovy: checkout scm
+        build:
+          steps:
+          - sh: go get github.com/golang/dep
+            image: library/golang:latest
+            name: go-get-dep
+          - sh: make build
+            image: library/golang:latest
+            name: make-linux
+          - sh: make test
+            image: library/golang:latest
+            name: make-test
