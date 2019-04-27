@@ -1,9 +1,9 @@
 buildPack: none
+agent:
+  image: library/golang:latest
 pipelineConfig:
   pipelines:
     pullRequest:
-      agent:
-        image: golang
       setup:
         steps:
         - groovy: checkout scm
