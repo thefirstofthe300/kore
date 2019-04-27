@@ -1,0 +1,24 @@
+Step: build-step-credential-initializer-td7z4:
+
+{"level":"warn","ts":1556345387.150581,"logger":"fallback-logger","caller":"logging/config.go:65","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/backport-container-name-fix\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1556345387.1509042,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+Step: build-step-git-source-****************-kore-pr-1-serv-tsft6:
+
+{"level":"warn","ts":1556345388.6087837,"logger":"fallback-logger","caller":"logging/config.go:65","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/backport-container-name-fix\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1556345389.1719847,"logger":"fallback-logger","caller":"git-init/main.go:99","msg":"Successfully cloned \"https://github.com/****************/kore\" @ \"7d31e1c3191fcf7b37ca20736114ceb564449aa7\" in path \"/workspace/source\""}
+Step: build-step-place-tools:
+
+Step: build-step-git-merge:
+
+Warning failed to load version: failed to parse version -dev+9e73adc0b: No Major.Minor.Patch elements found
+time="2019-04-27T06:09:51Z" level=info msg="got "
+Using SHAs from PULL_REFS=master:7795de53301cc68699666efde4d76ecfd314740f,1:7d31e1c3191fcf7b37ca20736114ceb564449aa7
+ran git fetch --unshallow origin 7d31e1c3191fcf7b37ca20736114ceb564449aa7: 7795de53301cc68699666efde4d76ecfd314740f: in 
+ran git checkout master in 
+ran git reset --hard 7795de53301cc68699666efde4d76ecfd314740f in 
+ran clean --force -d . in 
+ran git merge 7d31e1c3191fcf7b37ca20736114ceb564449aa7 in 
+Step: build-step-build-make-linux:
+
+make: *** No rule to make target `linux'.  Stop.
+{"component":"entrypoint","error":"wrapped process failed: exit status 2","level":"error","msg":"Error executing test process","time":"2019-04-27T06:09:54Z"}
