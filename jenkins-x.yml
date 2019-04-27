@@ -11,7 +11,7 @@ PipelineConfig:
         - groovy: checkout scm
       build:
         steps:
-        - sh: go get github.com/golang/dep
+        - sh: ${GOPATH}/bin//go get github.com/golang/dep
           name: go-get-dep
         - sh: make build
           name: make-linux
