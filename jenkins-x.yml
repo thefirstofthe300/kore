@@ -9,7 +9,7 @@ pipelineConfig:
         - groovy: checkout scm
       build:
         steps:
-        - sh: /usr/local/go/bin/go get github.com/golang/dep
+        - sh: go get github.com/golang/dep
           image: library/golang:latest
           name: go-get-dep
         - sh: make build
